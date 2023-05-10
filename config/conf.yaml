@@ -1,0 +1,41 @@
+Go-micro-dfs:
+  dfsServer:
+    name: 'dfs.Server'
+    server-address: 127.0.0.1
+    port: 8080
+
+  nameNode:
+    name: 'dfs.NameNode'
+    servers:
+      - server-address: 127.0.0.1
+        port: 8090
+      - server-address: 127.0.0.1
+        port: 8091
+
+  dataNode:
+    name: 'dfs.DataNode'
+    servers:
+      - server-address: 127.0.0.1
+        port: 9000
+      - server-address: 127.0.0.1
+        port: 9002
+
+  # 可以抄一下 redis的集群configuration
+  redis-config:
+    host: '34.150.221.87:6379'
+    auth: 123456
+
+  sftp-servers:
+    hosts:
+      - ipaddr: 35.236.240.242
+        port: 2021
+      - ipaddr: 35.236.240.242
+        port: 2022
+      - ipaddr: 35.236.240.242
+        port: 2023
+      - ipaddr: 35.245.147.191
+        port: 2021
+      - ipaddr: 35.245.147.191
+        port: 2022
+      - ipaddr: 35.245.147.191
+        port: 2023

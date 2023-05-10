@@ -1,0 +1,28 @@
+syntax = "proto3";
+package event;
+option go_package="./;event";
+
+message Event {
+	string id = 1;
+	int64 timestamp = 2;
+	string message = 3;
+}
+
+message UpdateNameNodeEvent {
+	string MethodName = 1;
+	string FileSha1 = 2;
+	string FileName = 3;
+	int64 FileSize= 4;
+	int32 ChunkNum = 5;
+	string AddTime = 6;
+	string SftpIPAdr= 7;
+	int32 Replica = 8;
+	string UpdateTime = 9;
+}
+
+message UploadFile2SFTPEvent {
+	string FileSha1 = 1;
+	string FileBlockPath = 2;
+	int32 Replica = 3;
+	string SftpIPAddr = 4;
+}
