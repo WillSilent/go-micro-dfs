@@ -1,0 +1,17 @@
+syntax = "proto3";
+package pb;
+option go_package="./;pb";
+
+service DfsSrv {
+	rpc Upload(Args) returns (Result) {}
+
+}
+
+message Args {
+	string filePath = 1;
+}
+
+message Result {
+	int32 code = 1;
+	string message = 2;
+}

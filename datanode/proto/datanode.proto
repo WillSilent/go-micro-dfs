@@ -1,0 +1,19 @@
+syntax = "proto3";
+package pb;
+option go_package="./;pb";
+
+service DataNode {
+	rpc UploadFileBlock(UploadArgs) returns (Result) {}
+}
+
+message UploadArgs {
+	string FileSha1 = 1;
+	string FileBlockPath = 2;
+	int32 Replica = 3;
+	string SftpIPAddr = 4;
+}
+
+message Result {
+	int32 code = 1;
+	string message = 2;
+}

@@ -1,0 +1,29 @@
+syntax = "proto3";
+package pb;
+option go_package="./;pb";
+
+service NameNode {
+	rpc addFileMetaData(AddReq) returns (Result) {}
+	rpc UpdateFileBlockMetaData(UpdateReq) returns (Result) {}
+}
+
+message AddReq {
+	string FileSha1 = 1;
+	string FileName = 2;
+	int64 FileSize= 3;
+	int32 ChunkNum = 4;
+	string AddTime = 5;
+}
+
+message UpdateReq {
+	string FileSha1 = 1;
+	string FileName = 2;
+	string SftpIPAdr= 3;
+	int32 Replica = 4;
+	string UpdateTime = 5;
+}
+
+message Result {
+	int32 code = 1;
+	string message = 2;
+}
