@@ -4,19 +4,12 @@ import (
 	"context"
 	pb "go-micro-dfs/datanode/proto"
 	sftpUtil "go-micro-dfs/datanode/util"
-	evMsg "go-micro-dfs/service/event"
 
 	"go-micro.dev/v4/logger"
-	"go-micro.dev/v4/util/log"
 )
 
 type DataNode struct {
 	ConnManager *sftpUtil.SFTPConnectionManager
-}
-
-func (n *DataNode) Handler(ctx context.Context, msg *evMsg.UploadFile2SFTPEvent) error{
-	log.Log("DataNode Handler Received:", msg.SftpIPAddr)
-	return nil
 }
 
 func (d *DataNode) UploadFileBlock(ctx context.Context, req *pb.UploadArgs, rsp *pb.Result) error {

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	pb "go-micro-dfs/dfs-server/proto"
 	"go-micro-dfs/dfs-server/util"
@@ -12,28 +13,24 @@ import (
 	"strconv"
 	"time"
 
-	"go-micro.dev/v4"
+	"github.com/pborman/uuid"
+	"go-micro.dev/v4/broker"
 	"go-micro.dev/v4/util/log"
 )
 type DfsSrv struct {
-	NamePub micro.Publisher
-	DataPub micro.Publisher
+	// NamePub micro.Publisher
+	// DataPub micro.Publisher
 }
 
-type MsgIterface interface {}
-
 // send events using the publisher
-func sendEv(msg MsgIterface, p micro.Publisher) {
-	t := time.NewTicker(time.Second)
-
-	for range t.C {
-		log.Logf("publishing %+v\n", msg)
-
-		// publish an event
-		if err := p.Publish(context.TODO(), msg); err != nil {
-			log.Logf("error publishing: %v", err)
-		}
+func sendEv(topic string, msg *broker.Message) {
+		
+	if err := broker.Publish(topic, msg); err != nil {
+		log.Fatal("Broker publish error:", err)
+	} else {
+		log.Infof("Broker Publish topic: %s msg: %s", topic, msg)
 	}
+	
 }
 
 func (s *DfsSrv) Upload(ctx context.Context, in *pb.Args, out *pb.Result) error {
@@ -62,7 +59,19 @@ func (s *DfsSrv) Upload(ctx context.Context, in *pb.Args, out *pb.Result) error 
 		ChunkNum: int32(math.Ceil(float64(fileInfo.Size()) / (64 * 1024 * 1024))),
 		AddTime: time.Now().Format("2006-01-02 15:04"),
 	}
-	go sendEv(event, s.NamePub)
+	msgBody, err := json.Marshal(event)
+	if err != nil {
+		log.Fatal(err.Error())
+		return nil
+	}
+
+	msg := &broker.Message{
+		Header: map[string]string {
+			"id": uuid.NewUUID().String(),
+		},
+		Body: msgBody,
+	}
+	go sendEv("dfs.topic.namenode", msg)
 
 	// 3. 将文件进行分片，并放入队列中，并将文件写入到分配的datanode中，完成后，往 namenode发送一条请求，往redis中写入数据
 	fileBlockPaths := splitFile(in.FilePath)
@@ -71,7 +80,7 @@ func (s *DfsSrv) Upload(ctx context.Context, in *pb.Args, out *pb.Result) error 
 			
 		// 	//TODO:怎么去ip地址，保证是分块是相对散列的
 			port := 2021 + j;
-			SftpIPAddr := "192.168.246.100:"+strconv.Itoa(port)
+			SftpIPAddr := "192.168.122.1:"+strconv.Itoa(port)
 
 			// 往blocker中发数据，pub-namenode，pub-datanode
 			// create new event
@@ -81,7 +90,21 @@ func (s *DfsSrv) Upload(ctx context.Context, in *pb.Args, out *pb.Result) error 
 				Replica: int32(j+1),
 				SftpIPAddr: SftpIPAddr,
 			}
-			go sendEv(ev1, s.DataPub)
+
+			ev1MsgBody, err := json.Marshal(ev1)
+			if err != nil {
+				log.Fatal(err.Error())
+				return nil
+			}
+
+			ev1Msg := &broker.Message{
+				Header: map[string]string {
+					"id": uuid.NewUUID().String(),
+				},
+				Body: ev1MsgBody,
+			}
+
+			go sendEv("dfs.topic.datanode", ev1Msg)
 
 			ev2 := &evMsg.UpdateNameNodeEvent{
 				MethodName: "Update",
@@ -91,7 +114,20 @@ func (s *DfsSrv) Upload(ctx context.Context, in *pb.Args, out *pb.Result) error 
 				Replica: int32(j+1),
 				UpdateTime: time.Now().Format("2006-01-02 15:04"),
 			}
-			go sendEv(ev2, s.NamePub)
+			ev2MsgBody, err := json.Marshal(ev2)
+			if err != nil {
+				log.Fatal(err.Error())
+				return nil
+			}
+
+			ev2Msg := &broker.Message{
+				Header: map[string]string {
+					"id": uuid.NewUUID().String(),
+				},
+				Body: ev2MsgBody,
+			}
+
+			go sendEv("dfs.topic.namenode", ev2Msg)
 		}
 
 		log.Logf("File: %s uploaded Successfully!", fileblockPath)
@@ -141,7 +177,7 @@ func splitFile(infile string) []string{
 		fi.Read(b)
 
 		//TODO: filename need to be modified.
-		ofile := fmt.Sprintf("./tmp/%s-%d.part", fileInfo.Name(), i)
+		ofile := fmt.Sprintf("/Users/will/Desktop/git-code/go-micro-dfs/test/tmp/%s-%d.part", fileInfo.Name(), i)
 		filepaths[i-1] = ofile 
 		
 		fmt.Printf("Create: %s\n", ofile)
