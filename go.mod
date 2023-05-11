@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/asim/go-micro/plugins/registry/consul/v4 v4.7.0
 	github.com/gomodule/redigo v1.8.9
+	github.com/pborman/uuid v1.2.1
 	github.com/pkg/sftp v1.13.5
 	go-micro.dev/v4 v4.7.0
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3

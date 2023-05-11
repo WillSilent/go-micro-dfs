@@ -3,18 +3,27 @@ package main
 import (
 	"fmt"
 	"go-micro-dfs/datanode/handler"
+	pb "go-micro-dfs/datanode/proto"
 	sftpUtil "go-micro-dfs/datanode/util"
 
 	"github.com/asim/go-micro/plugins/registry/consul/v4"
 	"go-micro.dev/v4"
+	"go-micro.dev/v4/broker"
+	"go-micro.dev/v4/logger"
 	"go-micro.dev/v4/registry"
+	"go-micro.dev/v4/util/log"
 )
 
-// 1.建立sftp连接池
-// 2.把文件上传至sftp服务器
+
+func eventHandler(b broker.Event) error{
+	msg := string(b.Message().Body)
+	logger.Infof("message: %s, header: %s", msg, b.Message().Header)
+	return nil
+}
+
 func main() {
 	// consul 服务地址按照实际情况填写
-	reg := consul.NewRegistry(registry.Addrs("192.168.246.100:8500"))
+	reg := consul.NewRegistry(registry.Addrs("127.0.0.1:8500"))
 
 	service := micro.NewService(
 		micro.Registry(reg),
@@ -30,11 +39,26 @@ func main() {
 	}
 
 	//注册subscriber
-	err := micro.RegisterSubscriber("dfs.topic.datanode", service.Server(), node.Handler)
-	
-	//err := pb.RegisterDataNodeHandler(service.Server(), &node)
+	// err := micro.RegisterSubscriber("dfs.topic.datanode", service.Server(), new(Sub))
+	// if err != nil {
+	// 	fmt.Println("failed to register a subcriber: ", err)
+	// 	return
+	// }
+	//注册subscriber
+	if err := broker.Connect(); err != nil {
+		log.Error("Broker Connect Error, ", err)
+	}
+	//注册namenode
+	_, err := broker.Subscribe("dfs.topic.datanode", eventHandler)
+	if err != nil {
+		log.Error("failed to Subscribe to a broker: ", err)
+	}
+
+	//注册grpc handler
+	err = pb.RegisterDataNodeHandler(service.Server(), &node)
 	if err != nil {
 		fmt.Println("failed to register a handler: ", err)
+		return
 	}
 
 	if err = service.Run(); err != nil {

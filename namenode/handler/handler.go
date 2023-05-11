@@ -5,22 +5,13 @@ import (
 	pb "go-micro-dfs/namenode/proto"
 	"strconv"
 
-	evMsg "go-micro-dfs/service/event"
-
 	"github.com/gomodule/redigo/redis"
 	"go-micro.dev/v4/logger"
-	"go-micro.dev/v4/util/log"
 )
 
 type NameNode struct{
 	Pool *redis.Pool
 }
-
-func (n *NameNode) Handler(ctx context.Context, msg *evMsg.UpdateNameNodeEvent) error{
-	log.Log("NameNode Handler Received:", msg.MethodName)
-	return nil
-}
-
 
 func (n *NameNode) AddFileMetaData(ctx context.Context, req *pb.AddReq, rsp *pb.Result) error {
 	// 调用redis的连接池，并返回上传结果
@@ -62,6 +53,5 @@ func (n *NameNode) UpdateFileBlockMetaData(ctx context.Context, req *pb.UpdateRe
 	rConn.Do("HSET", req.FileSha1, "updateAt", req.UpdateTime)
 	logger.Info("Successfully Update file block data in the redis !")
 	return nil
-
 
 }
