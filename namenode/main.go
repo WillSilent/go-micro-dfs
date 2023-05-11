@@ -20,7 +20,6 @@ func eventHandler(b broker.Event) error{
 	return nil
 }
 
-
 func main() {
 	// consul 服务地址按照实际情况填写
 	reg := consul.NewRegistry(registry.Addrs("127.0.0.1:8500"))
