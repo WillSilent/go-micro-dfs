@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go-micro-dfs/datanode/handler"
+	pb "go-micro-dfs/datanode/proto"
 	sftpUtil "go-micro-dfs/datanode/util"
 
 	"github.com/asim/go-micro/plugins/registry/consul/v4"
@@ -14,7 +15,7 @@ import (
 // 2.把文件上传至sftp服务器
 func main() {
 	// consul 服务地址按照实际情况填写
-	reg := consul.NewRegistry(registry.Addrs("192.168.246.100:8500"))
+	reg := consul.NewRegistry(registry.Addrs("127.0.0.1:8500"))
 
 	service := micro.NewService(
 		micro.Registry(reg),
@@ -31,8 +32,11 @@ func main() {
 
 	//注册subscriber
 	err := micro.RegisterSubscriber("dfs.topic.datanode", service.Server(), node.Handler)
-	
-	//err := pb.RegisterDataNodeHandler(service.Server(), &node)
+	if err != nil {
+		fmt.Println("failed to register a subsciber: ", err)
+	}
+
+	err = pb.RegisterDataNodeHandler(service.Server(), &node)
 	if err != nil {
 		fmt.Println("failed to register a handler: ", err)
 	}

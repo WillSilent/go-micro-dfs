@@ -4,6 +4,7 @@ import (
 	"fmt"
 	redisConn "go-micro-dfs/namenode/db"
 	"go-micro-dfs/namenode/handler"
+	pb "go-micro-dfs/namenode/proto"
 
 	"github.com/asim/go-micro/plugins/registry/consul/v4"
 	"go-micro.dev/v4"
@@ -14,7 +15,7 @@ import (
 // 2. 把文件元数据信息写入redis服务器中，同时响应datanode的写回请求
 func main() {
 	// consul 服务地址按照实际情况填写
-	reg := consul.NewRegistry(registry.Addrs("192.168.246.100:8500"))
+	reg := consul.NewRegistry(registry.Addrs("127.0.0.1:8500"))
 
 	service := micro.NewService(
 		micro.Registry(reg),
@@ -31,9 +32,13 @@ func main() {
 
 	//注册subscriber
 	err := micro.RegisterSubscriber("dfs.topic.namenode", service.Server(), node.Handler)
-	
+	if err != nil {
+		fmt.Println("failed to register a handler: ", err)
+	}
+
+
 	//rpc调用
-	//err := pb.RegisterNameNodeHandler(service.Server(), &node)
+	err = pb.RegisterNameNodeHandler(service.Server(), &node)
 	
 	if err != nil {
 		fmt.Println("failed to register a handler: ", err)

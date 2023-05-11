@@ -30,7 +30,7 @@ func sendEv(msg MsgIterface, p micro.Publisher) {
 		log.Logf("publishing %+v\n", msg)
 
 		// publish an event
-		if err := p.Publish(context.Background(), msg); err != nil {
+		if err := p.Publish(context.TODO(), msg); err != nil {
 			log.Logf("error publishing: %v", err)
 		}
 	}

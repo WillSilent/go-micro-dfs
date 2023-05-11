@@ -13,7 +13,7 @@ import (
 // 生成文件元数据信息，并对文件进行切分
 func main() {
 	// consul 服务地址按照实际情况填写
-	reg := consul.NewRegistry(registry.Addrs("192.168.246.100:8500"))
+	reg := consul.NewRegistry(registry.Addrs("127.0.0.1:8500"))
 
 	service := micro.NewService(
 		micro.Registry(reg),
