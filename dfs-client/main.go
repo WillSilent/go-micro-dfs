@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	pb "go-micro-dfs/dfs-server/proto"
+	"time"
 
 	"github.com/asim/go-micro/plugins/registry/consul/v4"
 	"go-micro.dev/v4"
@@ -19,10 +20,14 @@ func main() {
 
 	service := micro.NewService(micro.Registry(reg), micro.Name("greeter.client"))
 	service.Init()
-	rsp, err := pb.NewDfsSrvService("dfs.Server", service.Client()).Upload(context.TODO(), &pb.Args{FilePath: "/Users/will/Desktop/git-code/go-micro-dfs/test//test.mov"})
+
+	fmt.Println("Begin to upload file.....")
+	t1 := time.Now()
+	rsp, err := pb.NewDfsSrvService("dfs.Server", service.Client()).Upload(context.TODO(), &pb.Args{FilePath: "/Users/will/Desktop/git-code/go-micro-dfs/test/test_3G.mp4"})
 	if err != nil {
 		fmt.Println("failed to new greeter service: ", err)
 	}
-
+	t2 := time.Now()
 	fmt.Println(rsp.Code, rsp.Message)
+	fmt.Printf("Time Spend:%s.", t2.Sub(t1))
 }

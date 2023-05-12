@@ -8,9 +8,9 @@ import (
 	"go-micro-dfs/dfs-server/util"
 	evMsg "go-micro-dfs/service/event"
 	"math"
+	"math/rand"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	"github.com/pborman/uuid"
@@ -18,8 +18,6 @@ import (
 	"go-micro.dev/v4/util/log"
 )
 type DfsSrv struct {
-	// NamePub micro.Publisher
-	// DataPub micro.Publisher
 }
 
 // send events using the publisher
@@ -28,7 +26,7 @@ func sendEv(topic string, msg *broker.Message) {
 	if err := broker.Publish(topic, msg); err != nil {
 		log.Fatal("Broker publish error:", err)
 	} else {
-		log.Infof("Broker Publish topic: %s msg: %s", topic, msg)
+		log.Infof("Broker Publish a message to topic: %s.", topic)
 	}
 	
 }
@@ -71,70 +69,78 @@ func (s *DfsSrv) Upload(ctx context.Context, in *pb.Args, out *pb.Result) error 
 		},
 		Body: msgBody,
 	}
-	go sendEv("dfs.topic.namenode", msg)
+	sendEv("dfs.topic.namenode", msg)
 
 	// 3. 将文件进行分片，并放入队列中，并将文件写入到分配的datanode中，完成后，往 namenode发送一条请求，往redis中写入数据
 	fileBlockPaths := splitFile(in.FilePath)
+	
+	rand.Seed(time.Now().UnixNano())
+	
 	for _, fileblockPath := range fileBlockPaths{
-		for j := 0; j < 3; j++ {
-			
-		// 	//TODO:怎么去ip地址，保证是分块是相对散列的
-			port := 2021 + j;
-			SftpIPAddr := "192.168.122.1:"+strconv.Itoa(port)
-
-			// 往blocker中发数据，pub-namenode，pub-datanode
-			// create new event
-			ev1 := &evMsg.UploadFile2SFTPEvent{
-				FileBlockPath: fileblockPath,
-				FileSha1: fileSha1,
-				Replica: int32(j+1),
-				SftpIPAddr: SftpIPAddr,
-			}
-
-			ev1MsgBody, err := json.Marshal(ev1)
-			if err != nil {
-				log.Fatal(err.Error())
-				return nil
-			}
-
-			ev1Msg := &broker.Message{
-				Header: map[string]string {
-					"id": uuid.NewUUID().String(),
-				},
-				Body: ev1MsgBody,
-			}
-
-			go sendEv("dfs.topic.datanode", ev1Msg)
-
-			ev2 := &evMsg.UpdateNameNodeEvent{
-				MethodName: "Update",
-				FileSha1: fileSha1,
-				FileName: filepath.Base(fileblockPath),
-				SftpIPAdr: SftpIPAddr,
-				Replica: int32(j+1),
-				UpdateTime: time.Now().Format("2006-01-02 15:04"),
-			}
-			ev2MsgBody, err := json.Marshal(ev2)
-			if err != nil {
-				log.Fatal(err.Error())
-				return nil
-			}
-
-			ev2Msg := &broker.Message{
-				Header: map[string]string {
-					"id": uuid.NewUUID().String(),
-				},
-				Body: ev2MsgBody,
-			}
-
-			go sendEv("dfs.topic.namenode", ev2Msg)
+		j := rand.Intn(3)
+		SftpIPAddr := "34.145.247.183:22"
+		switch j {
+      case 0: SftpIPAddr = "34.145.247.183:22"
+      case 1: SftpIPAddr = "34.125.193.47:22"
+      case 2 : SftpIPAddr = "34.16.141.143:22"
+      default: SftpIPAddr = "34.145.247.183:22"  
+   }
+		//TODO:怎么去ip地址，保证是分块是相对散列的
+		// 34.125.193.47
+		// 34.16.141.143
+		// 34.145.247.183
+	
+		// 往blocker中发数据，pub-namenode，pub-datanode
+		// create new event
+		ev1 := &evMsg.UploadFile2SFTPEvent{
+			FileBlockPath: fileblockPath,
+			FileSha1: fileSha1,
+			SftpIPAddr: SftpIPAddr,
 		}
 
-		log.Logf("File: %s uploaded Successfully!", fileblockPath)
+		ev1MsgBody, err := json.Marshal(ev1)
+		if err != nil {
+			log.Fatal(err.Error())
+			return nil
+		}
+
+		ev1Msg := &broker.Message{
+			Header: map[string]string {
+				"id": uuid.NewUUID().String(),
+			},
+			Body: ev1MsgBody,
+		}
+
+		sendEv("dfs.topic.datanode", ev1Msg)
+
+		ev2 := &evMsg.UpdateNameNodeEvent{
+			MethodName: "Update",
+			FileSha1: fileSha1,
+			FileName: filepath.Base(fileblockPath),
+			SftpIPAdr: SftpIPAddr,
+			Replica: 1,
+			UpdateTime: time.Now().Format("2006-01-02 15:04"),
+		}
+		ev2MsgBody, err := json.Marshal(ev2)
+		if err != nil {
+			log.Fatal(err.Error())
+			return nil
+		}
+
+		ev2Msg := &broker.Message{
+			Header: map[string]string {
+				"id": uuid.NewUUID().String(),
+			},
+			Body: ev2MsgBody,
+		}
+		sendEv("dfs.topic.namenode", ev2Msg)
+
+		fmt.Printf("File: %s Published!\n", fileblockPath)
 	}
 
 	// TODO: 4.删除临时文件
-
+	out.Code = 200
+	out.Message = "Upload Finshed!";
 	return nil
 }
 

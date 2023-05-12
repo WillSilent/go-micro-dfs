@@ -157,7 +157,7 @@ func Connect(user, password, host string, port int) (*sftp.Client, error) {
 	 log.Fatal(err)
 	}
 	dstFile.Write(ff)
-	fmt.Println(localFilePath + " copy file to remote server finished!")
+	log.Printf(localFilePath + " copy file to remote server finished!\n")
  }
 
  func UploadDirectory(sftpClient *sftp.Client, localPath string, remotePath string) {

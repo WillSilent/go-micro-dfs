@@ -27,3 +27,7 @@ https://juejin.cn/post/7006228288708444173
   #v3版本
   go get github.com/micro/micro/v3/cmd/protoc-gen-micro
 ```
+
+### 搭建 sftp 服务器
+
+https://zhuanlan.zhihu.com/p/494150542

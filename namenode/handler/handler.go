@@ -52,6 +52,7 @@ func (n *NameNode) UpdateFileBlockMetaData(ctx context.Context, req *pb.UpdateRe
 	rConn.Do("HSET", req.FileSha1, req.FileName + "_replica_"+strconv.Itoa(int(req.Replica)), req.SftpIPAdr)
 	rConn.Do("HSET", req.FileSha1, "updateAt", req.UpdateTime)
 	logger.Info("Successfully Update file block data in the redis !")
+	rsp.Code = 200
+	rsp.Message = "Successfully Update file block data in the redis!"
 	return nil
-
 }

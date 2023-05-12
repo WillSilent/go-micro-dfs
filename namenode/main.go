@@ -1,24 +1,23 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	redisConn "go-micro-dfs/namenode/db"
 	"go-micro-dfs/namenode/handler"
 	pb "go-micro-dfs/namenode/proto"
+	evMsg "go-micro-dfs/service/event"
+	"strconv"
 
 	"github.com/asim/go-micro/plugins/registry/consul/v4"
+	"github.com/gomodule/redigo/redis"
 	"go-micro.dev/v4"
 	"go-micro.dev/v4/broker"
-	"go-micro.dev/v4/logger"
 	"go-micro.dev/v4/registry"
 	"go-micro.dev/v4/util/log"
 )
 
-func eventHandler(b broker.Event) error{
-	msg := string(b.Message().Body)
-	logger.Infof("message: %s, header: %s", msg, b.Message().Header)
-	return nil
-}
+var Pool *redis.Pool
 
 func main() {
 	// consul 服务地址按照实际情况填写
@@ -33,9 +32,7 @@ func main() {
 	service.Init()
 
 	// 初始化Redis连接池
-	node := handler.NameNode{
-		Pool: redisConn.RedisPool(),
-	}
+	Pool = redisConn.RedisPool()
 
 	//注册subscriber
 	if err := broker.Connect(); err != nil {
@@ -48,6 +45,9 @@ func main() {
 	}
 
 	//rpc调用
+	node := handler.NameNode{
+		Pool: Pool,
+	}
 	err = pb.RegisterNameNodeHandler(service.Server(), &node)
 	
 	if err != nil {
@@ -57,5 +57,58 @@ func main() {
 	if err = service.Run(); err != nil {
 		fmt.Println("failed to run a service: ", err)
 	}
+}
+
+func eventHandler(b broker.Event) error{
+	var req *evMsg.UpdateNameNodeEvent
+	if err := json.Unmarshal(b.Message().Body, &req); err != nil {
+			return err
+	}
+	fmt.Printf("Msg: %s:%s\n", req.FileName, req.MethodName)
+	//doUpdate or doAdd
+	if req.MethodName == "Add" {
+		doAdd(req)
+	}
+
+	if req.MethodName == "Update" {
+		doUpdate(req)
+	}
+	return nil
+}
+
+func doAdd(req *evMsg.UpdateNameNodeEvent) error{
+	// 调用redis的连接池，并返回上传结果
+	rConn := Pool.Get()
+
+	if rConn == nil {
+		log.Fatal("Error: Cannot not get a connection from redis.")
+		return nil
+	}
+
+	defer rConn.Close()
+	//将初始信息写入redis缓存
+	rConn.Do("HSET", req.FileSha1, "filename", req.FileName)
+	rConn.Do("HSET", req.FileSha1, "filesize", req.FileSize)
+	rConn.Do("HSET", req.FileSha1, "chunkcount", req.ChunkNum)
+	rConn.Do("HSET", req.FileSha1, "addAt", req.AddTime)
+	log.Infof("Successfully Add a File Meta!")
+	return nil
+}
+
+func doUpdate(req *evMsg.UpdateNameNodeEvent) error{
+	// 调用redis的连接池，并返回上传结果
+	rConn := Pool.Get()
+
+	if rConn == nil {
+		log.Fatal("Error: Cannot not get a connection from redis.")
+		return nil
+	}
+
+	defer rConn.Close()
+	//更新: 还要加一个update_time
+	rConn.Do("HSET", req.FileSha1, req.FileName + "_replica_"+strconv.Itoa(int(req.Replica)), req.SftpIPAdr)
+	rConn.Do("HSET", req.FileSha1, "updateAt", req.UpdateTime)
+	log.Infof("Successfully Update file block data in the redis !")
+	return nil
 }
 
