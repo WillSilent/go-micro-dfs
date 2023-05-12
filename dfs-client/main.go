@@ -18,14 +18,14 @@ func main() {
 		}
 	})
 
-	service := micro.NewService(micro.Registry(reg), micro.Name("greeter.client"))
+	service := micro.NewService(micro.Registry(reg), micro.Name("client"))
 	service.Init()
 
 	fmt.Println("Begin to upload file.....")
 	t1 := time.Now()
-	rsp, err := pb.NewDfsSrvService("dfs.Server", service.Client()).Upload(context.TODO(), &pb.Args{FilePath: "/Users/will/Desktop/git-code/go-micro-dfs/test/test_3G.mp4"})
+	rsp, err := pb.NewDfsSrvService("dfs.Server", service.Client()).Upload(context.TODO(), &pb.Args{FilePath: "C:/Users/will9/OneDrive/Desktop/go-micro-dfs/test/test.mp4"})
 	if err != nil {
-		fmt.Println("failed to new greeter service: ", err)
+		fmt.Println("failed to new DfsSrvService: ", err)
 	}
 	t2 := time.Now()
 	fmt.Println(rsp.Code, rsp.Message)

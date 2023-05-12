@@ -183,7 +183,7 @@ func splitFile(infile string) []string{
 		fi.Read(b)
 
 		//TODO: filename need to be modified.
-		ofile := fmt.Sprintf("/Users/will/Desktop/git-code/go-micro-dfs/test/tmp/%s-%d.part", fileInfo.Name(), i)
+		ofile := fmt.Sprintf("C:/Users/will9/OneDrive/Desktop/go-micro-dfs/test/tmp/%s-%d.part", fileInfo.Name(), i)
 		filepaths[i-1] = ofile 
 		
 		fmt.Printf("Create: %s\n", ofile)

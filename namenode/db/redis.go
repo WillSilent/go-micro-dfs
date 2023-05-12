@@ -23,7 +23,7 @@ func newRedisPool() *redis.Pool {
 				return nil, err
 			}
 			//此处1234对应redis密码
-			if _, err := conn.Do("AUTH", "123456"); err != nil {
+			if _, err := conn.Do("AUTH", "000415"); err != nil {
 				conn.Close()
 				return nil, err
 			}
