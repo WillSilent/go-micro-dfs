@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-micro-dfs/datanode/handler"
-	pb "go-micro-dfs/datanode/proto"
 	sftpUtil "go-micro-dfs/datanode/util"
+	pbDataNode "go-micro-dfs/service/datanode"
 	evMsg "go-micro-dfs/service/event"
 
 	"github.com/asim/go-micro/plugins/registry/consul/v4"
@@ -46,7 +46,7 @@ func main() {
 	node := handler.DataNode {
 		ConnManager: cm,
 	}
-	err = pb.RegisterDataNodeHandler(service.Server(), &node)
+	err = pbDataNode.RegisterDataNodeHandler(service.Server(), &node)
 	if err != nil {
 		fmt.Println("failed to register a handler: ", err)
 		return

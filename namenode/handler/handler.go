@@ -2,7 +2,7 @@ package handler
 
 import (
 	"context"
-	pb "go-micro-dfs/namenode/proto"
+	pbNameNode "go-micro-dfs/service/namenode"
 	"strconv"
 
 	"github.com/gomodule/redigo/redis"
@@ -13,7 +13,7 @@ type NameNode struct{
 	Pool *redis.Pool
 }
 
-func (n *NameNode) AddFileMetaData(ctx context.Context, req *pb.AddReq, rsp *pb.Result) error {
+func (n *NameNode) AddFileMetaData(ctx context.Context, req *pbNameNode.AddReq, rsp *pbNameNode.NnodeResult) error {
 	// 调用redis的连接池，并返回上传结果
 	rConn := n.Pool.Get()
 
@@ -35,7 +35,7 @@ func (n *NameNode) AddFileMetaData(ctx context.Context, req *pb.AddReq, rsp *pb.
 	return nil
 }
 
-func (n *NameNode) UpdateFileBlockMetaData(ctx context.Context, req *pb.UpdateReq, rsp *pb.Result) error {
+func (n *NameNode) UpdateFileBlockMetaData(ctx context.Context, req *pbNameNode.UpdateReq, rsp *pbNameNode.NnodeResult) error {
 	// 调用redis的连接池，并返回上传结果
 	rConn := n.Pool.Get()
 

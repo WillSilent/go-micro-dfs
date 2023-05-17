@@ -36,7 +36,7 @@ func NewDataNodeEndpoints() []*api.Endpoint {
 // Client API for DataNode service
 
 type DataNodeService interface {
-	UploadFileBlock(ctx context.Context, in *UploadArgs, opts ...client.CallOption) (*Result, error)
+	UploadFileBlock(ctx context.Context, in *UploadArgs, opts ...client.CallOption) (*DnodeResult, error)
 }
 
 type dataNodeService struct {
@@ -51,9 +51,9 @@ func NewDataNodeService(name string, c client.Client) DataNodeService {
 	}
 }
 
-func (c *dataNodeService) UploadFileBlock(ctx context.Context, in *UploadArgs, opts ...client.CallOption) (*Result, error) {
+func (c *dataNodeService) UploadFileBlock(ctx context.Context, in *UploadArgs, opts ...client.CallOption) (*DnodeResult, error) {
 	req := c.c.NewRequest(c.name, "DataNode.UploadFileBlock", in)
-	out := new(Result)
+	out := new(DnodeResult)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -64,12 +64,12 @@ func (c *dataNodeService) UploadFileBlock(ctx context.Context, in *UploadArgs, o
 // Server API for DataNode service
 
 type DataNodeHandler interface {
-	UploadFileBlock(context.Context, *UploadArgs, *Result) error
+	UploadFileBlock(context.Context, *UploadArgs, *DnodeResult) error
 }
 
 func RegisterDataNodeHandler(s server.Server, hdlr DataNodeHandler, opts ...server.HandlerOption) error {
 	type dataNode interface {
-		UploadFileBlock(ctx context.Context, in *UploadArgs, out *Result) error
+		UploadFileBlock(ctx context.Context, in *UploadArgs, out *DnodeResult) error
 	}
 	type DataNode struct {
 		dataNode
@@ -82,6 +82,6 @@ type dataNodeHandler struct {
 	DataNodeHandler
 }
 
-func (h *dataNodeHandler) UploadFileBlock(ctx context.Context, in *UploadArgs, out *Result) error {
+func (h *dataNodeHandler) UploadFileBlock(ctx context.Context, in *UploadArgs, out *DnodeResult) error {
 	return h.DataNodeHandler.UploadFileBlock(ctx, in, out)
 }

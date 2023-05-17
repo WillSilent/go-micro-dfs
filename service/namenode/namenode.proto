@@ -3,8 +3,8 @@ package pb;
 option go_package="./;pb";
 
 service NameNode {
-	rpc addFileMetaData(AddReq) returns (Result) {}
-	rpc UpdateFileBlockMetaData(UpdateReq) returns (Result) {}
+	rpc addFileMetaData(AddReq) returns (NnodeResult) {}
+	rpc UpdateFileBlockMetaData(UpdateReq) returns (NnodeResult) {}
 }
 
 message AddReq {
@@ -23,7 +23,7 @@ message UpdateReq {
 	string UpdateTime = 5;
 }
 
-message Result {
+message NnodeResult {
 	int32 code = 1;
 	string message = 2;
 }

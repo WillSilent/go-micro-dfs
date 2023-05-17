@@ -36,8 +36,8 @@ func NewNameNodeEndpoints() []*api.Endpoint {
 // Client API for NameNode service
 
 type NameNodeService interface {
-	AddFileMetaData(ctx context.Context, in *AddReq, opts ...client.CallOption) (*Result, error)
-	UpdateFileBlockMetaData(ctx context.Context, in *UpdateReq, opts ...client.CallOption) (*Result, error)
+	AddFileMetaData(ctx context.Context, in *AddReq, opts ...client.CallOption) (*NnodeResult, error)
+	UpdateFileBlockMetaData(ctx context.Context, in *UpdateReq, opts ...client.CallOption) (*NnodeResult, error)
 }
 
 type nameNodeService struct {
@@ -52,9 +52,9 @@ func NewNameNodeService(name string, c client.Client) NameNodeService {
 	}
 }
 
-func (c *nameNodeService) AddFileMetaData(ctx context.Context, in *AddReq, opts ...client.CallOption) (*Result, error) {
-	req := c.c.NewRequest(c.name, "NameNode.addFileMetaData", in)
-	out := new(Result)
+func (c *nameNodeService) AddFileMetaData(ctx context.Context, in *AddReq, opts ...client.CallOption) (*NnodeResult, error) {
+	req := c.c.NewRequest(c.name, "NameNode.AddFileMetaData", in)
+	out := new(NnodeResult)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -62,9 +62,9 @@ func (c *nameNodeService) AddFileMetaData(ctx context.Context, in *AddReq, opts 
 	return out, nil
 }
 
-func (c *nameNodeService) UpdateFileBlockMetaData(ctx context.Context, in *UpdateReq, opts ...client.CallOption) (*Result, error) {
+func (c *nameNodeService) UpdateFileBlockMetaData(ctx context.Context, in *UpdateReq, opts ...client.CallOption) (*NnodeResult, error) {
 	req := c.c.NewRequest(c.name, "NameNode.UpdateFileBlockMetaData", in)
-	out := new(Result)
+	out := new(NnodeResult)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -75,14 +75,14 @@ func (c *nameNodeService) UpdateFileBlockMetaData(ctx context.Context, in *Updat
 // Server API for NameNode service
 
 type NameNodeHandler interface {
-	AddFileMetaData(context.Context, *AddReq, *Result) error
-	UpdateFileBlockMetaData(context.Context, *UpdateReq, *Result) error
+	AddFileMetaData(context.Context, *AddReq, *NnodeResult) error
+	UpdateFileBlockMetaData(context.Context, *UpdateReq, *NnodeResult) error
 }
 
 func RegisterNameNodeHandler(s server.Server, hdlr NameNodeHandler, opts ...server.HandlerOption) error {
 	type nameNode interface {
-		AddFileMetaData(ctx context.Context, in *AddReq, out *Result) error
-		UpdateFileBlockMetaData(ctx context.Context, in *UpdateReq, out *Result) error
+		AddFileMetaData(ctx context.Context, in *AddReq, out *NnodeResult) error
+		UpdateFileBlockMetaData(ctx context.Context, in *UpdateReq, out *NnodeResult) error
 	}
 	type NameNode struct {
 		nameNode
@@ -95,10 +95,10 @@ type nameNodeHandler struct {
 	NameNodeHandler
 }
 
-func (h *nameNodeHandler) AddFileMetaData(ctx context.Context, in *AddReq, out *Result) error {
+func (h *nameNodeHandler) AddFileMetaData(ctx context.Context, in *AddReq, out *NnodeResult) error {
 	return h.NameNodeHandler.AddFileMetaData(ctx, in, out)
 }
 
-func (h *nameNodeHandler) UpdateFileBlockMetaData(ctx context.Context, in *UpdateReq, out *Result) error {
+func (h *nameNodeHandler) UpdateFileBlockMetaData(ctx context.Context, in *UpdateReq, out *NnodeResult) error {
 	return h.NameNodeHandler.UpdateFileBlockMetaData(ctx, in, out)
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"go-micro-dfs/dfs-server/handler"
-	pb "go-micro-dfs/dfs-server/proto"
+	pbDfsSrv "go-micro-dfs/service/dfsSrv"
 
 	"github.com/asim/go-micro/plugins/registry/consul/v4"
 	"go-micro.dev/v4"
@@ -39,7 +39,7 @@ func main() {
 		// DataPub: pub2,
 	}
 
-	err := pb.RegisterDfsSrvHandler(service.Server(), &srv)
+	err := 	pbDfsSrv.RegisterDfsSrvHandler(service.Server(), &srv)
 	if err != nil {
 		fmt.Println("failed to register a handler: ", err)
 	}

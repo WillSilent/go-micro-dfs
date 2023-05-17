@@ -5,8 +5,8 @@ import (
 	"fmt"
 	redisConn "go-micro-dfs/namenode/db"
 	"go-micro-dfs/namenode/handler"
-	pb "go-micro-dfs/namenode/proto"
 	evMsg "go-micro-dfs/service/event"
+	pbNameNode "go-micro-dfs/service/namenode"
 	"strconv"
 
 	"github.com/asim/go-micro/plugins/registry/consul/v4"
@@ -48,7 +48,7 @@ func main() {
 	node := handler.NameNode{
 		Pool: Pool,
 	}
-	err = pb.RegisterNameNodeHandler(service.Server(), &node)
+	err = pbNameNode.RegisterNameNodeHandler(service.Server(), &node)
 	
 	if err != nil {
 		fmt.Println("failed to register a handler: ", err)

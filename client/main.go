@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	pb "go-micro-dfs/dfs-server/proto"
+	pbDfsSrv "go-micro-dfs/service/dfsSrv"
 
 	"github.com/asim/go-micro/plugins/registry/consul/v4"
 	"go-micro.dev/v4"
@@ -25,10 +25,10 @@ func main() {
 	service.Init()
 
 	//create hello service client
-	client := pb.NewDfsSrvService("dfs.Server", service.Client())
+	client := pbDfsSrv.NewDfsSrvService("dfs.Server", service.Client())
 
 	
-	rsp, err := client.Upload(context.TODO(), &pb.Args{FilePath: "D:/code/github_code/dfs/test/test.mp4"})
+	rsp, err := client.Upload(context.TODO(), &pbDfsSrv.Args{FilePath: "D:/code/github_code/dfs/test/test.mp4"})
 	if err != nil {
 		fmt.Println("failed to new dfsServer service: ", err)
 		return

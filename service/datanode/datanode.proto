@@ -3,7 +3,7 @@ package pb;
 option go_package="./;pb";
 
 service DataNode {
-	rpc UploadFileBlock(UploadArgs) returns (Result) {}
+	rpc UploadFileBlock(UploadArgs) returns (DnodeResult) {}
 }
 
 message UploadArgs {
@@ -13,7 +13,7 @@ message UploadArgs {
 	string SftpIPAddr = 4;
 }
 
-message Result {
+message DnodeResult {
 	int32 code = 1;
 	string message = 2;
 }
